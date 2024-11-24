@@ -1,0 +1,67 @@
+networks:
+  laravel-network:
+    driver: bridge
+
+services:
+  laravel-app:
+    build: ./docker/app
+    container_name: laravel-app
+    entrypoint: dockerize -template ./docker/app/.app-env:/var/www/.env -wait tcp://laravel-db:3306 -timeout 5s ./docker/entrypoint.sh
+    environment:
+      - DB_HOST=laravel-db
+      - DB_PORT=3306
+      - DB_DATABASE=laravel_filament
+      - DB_USERNAME=root
+      - DB_PASSWORD=root
+    volumes:
+      - .:/var/www
+    networks:
+      - laravel-network
+    depends_on:
+      - laravel-db
+      - laravel-redis
+
+  laravel-nginx:
+    build: ./docker/nginx
+    container_name: laravel-nginx
+    working_dir: /var/www
+    entrypoint: dockerize -template ./docker/nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf -timeout 5s ./docker/nginx/entrypoint.sh
+    environment:
+      - NGINX_HOST=laravel-app
+      - NGINX_PORT=9000
+    restart: always
+    tty: true
+    ports:
+      - "8000:80"
+      - "8001:443"
+    volumes:
+      - .:/var/www
+    networks:
+      - laravel-network
+    depends_on:
+      - laravel-app
+
+  laravel-db:
+    image: mysql:8.0
+    command: --innodb-use-native-aio=0
+    container_name: laravel-db
+    restart: always
+    tty: true
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./docker/mysql:/var/lib/mysql
+    environment:
+      - MYSQL_DATABASE=laravel_filament
+      - MYSQL_ROOT_PASSWORD=root
+    networks:
+      - laravel-network
+
+  laravel-redis:
+    image: redis:alpine
+    container_name: laravel-redis
+    expose:
+      - 6379
+    networks:
+      - laravel-network
+
