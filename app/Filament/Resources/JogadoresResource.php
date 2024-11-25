@@ -6,12 +6,14 @@ use App\Filament\Resources\JogadoresResource\Pages;
 //use App\Filament\Resources\JogadoresResource\RelationManagers;
 use App\Models\Classe;
 use App\Models\Jogador;
+use App\Models\User;
 use App\Repositories\JogadorRepository;
 use Filament\Forms;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -19,6 +21,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Hash;
 
 class JogadoresResource extends Resource
 {
@@ -36,7 +39,55 @@ class JogadoresResource extends Resource
     {
         return $form
             ->schema([
+                Forms\Components\Section::make('Dados do Usuário')
+                    ->schema([
+                        Forms\Components\Hidden::make('user.id'),
+                        Forms\Components\TextInput::make('user.name')
+                            ->label('Nome')
+                            ->required()
+                            ->maxLength(255),
 
+                        Forms\Components\TextInput::make('user.email')
+                            ->label('E-mail')
+                            ->email()
+                            ->required()
+                            //->unique(User::class, 'email', ignoreRecord: true)
+                            ->disabled(fn ($livewire) => $livewire instanceof \Filament\Resources\Pages\EditRecord)
+                            ->readOnly(fn ($livewire) => $livewire instanceof \Filament\Resources\Pages\EditRecord),
+
+                        Forms\Components\TextInput::make('user.password')
+                            ->label('Senha')
+                            ->password()
+                            ->required()
+                            ->dehydrateStateUsing(fn($state) => Hash::make($state))
+                            ->visible(fn ($record) => !$record)
+                            ->hidden(fn ($livewire) => $livewire instanceof \Filament\Resources\Pages\EditRecord)
+                            ->confirmed(),
+
+                        Forms\Components\TextInput::make('user.password_confirmation')
+                            ->label('Confirmar Senha')
+                            ->password()
+                            ->requiredWith('user.password')
+                            ->hidden(fn ($livewire) => $livewire instanceof \Filament\Resources\Pages\EditRecord),
+                    ]),
+
+                Forms\Components\Section::make('Dados do Jogador')
+                    ->schema([
+                        Forms\Components\Select::make('classe_id')
+                            ->label('Classe')
+                            ->required()
+                            ->options(Classe::pluck('nome', 'id')),
+                        Forms\Components\TextInput::make('xp')
+                            ->label('XP')
+                            ->numeric()
+                            ->required()
+                            ->minValue(1)
+                            ->maxValue(100),
+
+                        Forms\Components\Toggle::make('confirmado')
+                            ->label('Confirmado')
+                            ->default(false),
+                    ]),
             ]);
     }
 
@@ -89,10 +140,23 @@ class JogadoresResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                DeleteAction::make()
+                    ->after(function ($record, Tables\Actions\DeleteAction $action) {
+                        if ($record->user()->exists()) {
+                            $record->user()->delete();
+                        }
+                    })
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->after(function ($records, Tables\Actions\DeleteBulkAction $action) {
+                            foreach ($records as $record) {
+                                if ($record->user()->exists()) {
+                                    $record->user()->delete();
+                                }
+                            }
+                        }),
                 ]),
             ]);
     }

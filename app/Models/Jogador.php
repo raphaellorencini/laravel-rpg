@@ -9,6 +9,14 @@ class Jogador extends Model
 {
     protected $table = 'jogadores';
 
+    protected $fillable = [
+        'classe_id',
+        'xp',
+        'confirmado',
+        'image',
+        'user_id',
+    ];
+
     public function user() {
         return $this->belongsTo(User::class);
     }

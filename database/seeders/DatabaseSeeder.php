@@ -63,7 +63,7 @@ class DatabaseSeeder extends Seeder
 
                 $user = User::factory()->create([
                     'name' => "{$classe->nome} {$titulo}",
-                    'email' => preg_replace('/[\x{0300}-\x{036F}]/ui', '', \Normalizer::normalize(mb_strtolower($classe->nome), \Normalizer::FORM_D)) . $i + 1 . '@text.com',
+                    'email' => preg_replace('/[\x{0300}-\x{036F}]/ui', '', \Normalizer::normalize(mb_strtolower($classe->nome), \Normalizer::FORM_D)) . $i + 1 . '@test.com',
                 ]);
                 $img = strtolower(substr($classe->nome, 0, 1)). rand(1, 4);
                 Jogador::create([
