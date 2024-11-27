@@ -44,21 +44,24 @@ class JogadoresResource extends Resource
                         Forms\Components\Hidden::make('user.id'),
                         Forms\Components\TextInput::make('user.name')
                             ->label('Nome')
-                            ->required()
+                            ->markAsRequired()
+                            ->rule('required')
                             ->maxLength(255),
 
                         Forms\Components\TextInput::make('user.email')
                             ->label('E-mail')
                             ->email()
-                            ->required()
-                            //->unique(User::class, 'email', ignoreRecord: true)
+                            ->markAsRequired()
+                            ->rule('required')
+                            ->unique(User::class, 'user.email', ignoreRecord: true)
                             ->disabled(fn ($livewire) => $livewire instanceof \Filament\Resources\Pages\EditRecord)
                             ->readOnly(fn ($livewire) => $livewire instanceof \Filament\Resources\Pages\EditRecord),
 
                         Forms\Components\TextInput::make('user.password')
                             ->label('Senha')
                             ->password()
-                            ->required()
+                            ->markAsRequired()
+                            ->rule('required')
                             ->dehydrateStateUsing(fn($state) => Hash::make($state))
                             ->visible(fn ($record) => !$record)
                             ->hidden(fn ($livewire) => $livewire instanceof \Filament\Resources\Pages\EditRecord)
@@ -75,12 +78,15 @@ class JogadoresResource extends Resource
                     ->schema([
                         Forms\Components\Select::make('classe_id')
                             ->label('Classe')
-                            ->required()
-                            ->options(Classe::pluck('nome', 'id')),
+                            ->markAsRequired()
+                            ->rule('required')
+                            ->options(Classe::pluck('nome', 'id'))
+                            ->disabled(fn ($livewire) => $livewire instanceof \Filament\Resources\Pages\EditRecord),
                         Forms\Components\TextInput::make('xp')
                             ->label('XP')
                             ->numeric()
-                            ->required()
+                            ->markAsRequired()
+                            ->rule('required')
                             ->minValue(1)
                             ->maxValue(100),
 

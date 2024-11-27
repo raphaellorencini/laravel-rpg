@@ -3,9 +3,11 @@
 namespace Database\Seeders;
 
 use App\Models\Classe;
+use App\Models\Guilda;
 use App\Models\Jogador;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -53,6 +55,38 @@ class DatabaseSeeder extends Seeder
             'da Magia', 'do Mistério', 'do Segredo', 'da Alma', 'do Espírito', 'do Tempo', 'do Espaço', 'do Universo',
             'da Eternidade'
         ];
+        
+        $guildas = [
+            'Guardiões da Luz',
+            'Sombras Eternas',
+            'Lâminas do Destino',
+            'Sentinelas do Crepúsculo',
+            'Guerreiros da Tempestade',
+            'Filhos da Noite',
+            'Protetores do Reino',
+            'Caçadores de Dragões',
+            'Irmandade da Fênix',
+            'Legião dos Imortais',
+            'Aliança dos Heróis',
+            'Ordem dos Magos',
+            'Cavaleiros da Aurora',
+            'Vingadores Sombrios',
+            'Clã dos Lobos',
+        ];
+        $tituloGuildas = $guildas;
+        shuffle($tituloGuildas);
+
+        for ($i = 0; $i < 2; $i++) {
+            Guilda::factory()->count(5)->sequence(function (Sequence $sequence) use ($i, &$tituloGuildas) {
+                $titulo = $tituloGuildas[0];
+                array_shift($tituloGuildas);
+                return [
+                    'nome' => $titulo,
+                    'maximo_jogadores' => rand(4, 8),
+                    'user_id' => $i + 1,
+                ];
+            })->create();
+        }
 
         Classe::all()->each(function ($classe) use ($titulos) {
             $titulosEmbaralhados = $titulos;

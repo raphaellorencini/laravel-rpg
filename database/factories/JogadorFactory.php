@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Classe;
+use App\Models\Jogador;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -10,6 +11,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class JogadorFactory extends Factory
 {
+    protected $model = Jogador::class;
+
     /**
      * Define the model's default state.
      *

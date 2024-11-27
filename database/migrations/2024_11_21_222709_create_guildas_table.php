@@ -13,7 +13,9 @@ return new class extends Migration
     {
         Schema::create('guildas', function (Blueprint $table) {
             $table->id();
-            $table->string('nome');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->string('nome')->unique();
+            $table->integer('maximo_jogadores')->default(4);
             $table->integer('xp_total')->default(0);
             $table->timestamps();
         });

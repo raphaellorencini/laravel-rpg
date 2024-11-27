@@ -43,7 +43,7 @@ class JogadorRepository extends BaseRepository
      */
     public function findByFields(array $conditions): Collection
     {
-        $query = Jogador::query();
+        $query = Jogador::query()->with('classe');
 
         foreach ($conditions as $field => $values) {
             if (is_array($values)) {
