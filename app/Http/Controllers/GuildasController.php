@@ -21,10 +21,9 @@ class GuildasController extends Controller
     public function index(Request $request)
     {
         $data = $request->all();
-        //return $data;
 
-        $jogadores = $data['jogadores'];
-        $guilda = $data['guilda'];
+        $jogadoresIds = $data['jogadores'];
+        $guildaId = $data['guilda'];
 
         $apiAccessKey = $data['api_access_key'] ?? null;
         if (isset($data['api_access_key'])) {
@@ -34,19 +33,14 @@ class GuildasController extends Controller
             abort(401);
         }
 
+        //Reseta Dados da Guilda
         DB::table('guildas')->where('id', 1)->update(['xp_total' => 0]);
-        DB::table('guilda_jogador')->where('guilda_id', '>=', $guilda)->delete();
+        DB::table('guilda_jogador')->where('guilda_id', $guildaId)->delete();
 
-        $guildas = $this->guildaRepository->findByFields(['id' => [$guilda]]);
+        $guildas = $this->guildaRepository->findByFields(['id' => [$guildaId]]);
         $jogadores = $this->jogadorRepository->findByFields([
             'confirmado' => true,
-            'id' => $jogadores
-//                [
-//                    4,9,12,//14,
-//                    18,//22,21,24,
-//                    //38,//44,36,43,
-//                    //51,58//,60,61
-//                ]
+            'jogadores.id' => $jogadoresIds
         ]);
 
         return $this->balanceamentoXPStrategy->balancear($jogadores->toArray(), $guildas);

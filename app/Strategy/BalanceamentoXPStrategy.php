@@ -18,7 +18,7 @@ class BalanceamentoXPStrategy implements BalanceamentoInterface
         }
 
         // Organiza jogadores por classe
-        $jogadoresPorClasse = $jogadores->groupBy('classe.nome');
+        $jogadoresPorClasse = $jogadores->groupBy('nome');
 
         // Verifica se tem ao menos um Mago ou Arqueiro
         $temMagoOuArqueiro = isset($jogadoresPorClasse['Mago']) || isset($jogadoresPorClasse['Arqueiro']);

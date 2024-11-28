@@ -72,7 +72,12 @@ class GuildasResource extends Resource
                 TextColumn::make('nome')
                     ->searchable(),
                 TextColumn::make('maximo_jogadores')
-                ->label('Máx. Jogadores'),
+                    ->alignCenter()
+                    ->label('Máx. Jogadores'),
+                TextColumn::make('jogadores_count')
+                    ->label('Total de Jogadores')
+                    ->alignCenter()
+                    ->counts('jogadores'),
             ])
             ->filters([
                 //
