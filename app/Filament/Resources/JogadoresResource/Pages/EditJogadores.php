@@ -4,7 +4,6 @@ namespace App\Filament\Resources\JogadoresResource\Pages;
 
 use App\Filament\Resources\JogadoresResource;
 use App\Models\User;
-use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 
 class EditJogadores extends EditRecord
@@ -14,7 +13,7 @@ class EditJogadores extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            //Actions\DeleteAction::make(),
+            //
         ];
     }
 

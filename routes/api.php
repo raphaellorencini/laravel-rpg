@@ -2,4 +2,4 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/guildas', [\App\Http\Controllers\GuildasController::class, 'index']);
+Route::post('/guildas', [\App\Http\Controllers\GuildasController::class, 'index'])->name('api.guildas.salvar');

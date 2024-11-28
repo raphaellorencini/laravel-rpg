@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\JogadoresResource\Pages;
-//use App\Filament\Resources\JogadoresResource\RelationManagers;
 use App\Models\Classe;
 use App\Models\Jogador;
 use App\Models\User;
@@ -20,14 +19,13 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Hash;
 
 class JogadoresResource extends Resource
 {
     protected static ?string $model = Jogador::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-user-circle';
 
     protected static ?int $navigationSort = 1;
 
@@ -37,6 +35,22 @@ class JogadoresResource extends Resource
 
     public static function form(Form $form): Form
     {
+        $hidden = false;
+        $disable = false;
+        $email = Forms\Components\TextInput::make('user.email')
+            ->label('E-mail')
+            ->email()
+            ->markAsRequired()
+            ->rule('required');
+        if ($form->getLivewire() instanceof \Filament\Resources\Pages\CreateRecord) {
+            $email->unique(User::class, 'users.email', ignoreRecord: true);
+        }
+        if ($form->getLivewire() instanceof \Filament\Resources\Pages\EditRecord) {
+            $hidden = true;
+            $disable = true;
+            $email->disabled($disable)
+                ->readOnly($disable);
+        }
         return $form
             ->schema([
                 Forms\Components\Section::make('Dados do Usuário')
@@ -48,14 +62,7 @@ class JogadoresResource extends Resource
                             ->rule('required')
                             ->maxLength(255),
 
-                        Forms\Components\TextInput::make('user.email')
-                            ->label('E-mail')
-                            ->email()
-                            ->markAsRequired()
-                            ->rule('required')
-                            ->unique(User::class, 'user.email', ignoreRecord: true)
-                            ->disabled(fn ($livewire) => $livewire instanceof \Filament\Resources\Pages\EditRecord)
-                            ->readOnly(fn ($livewire) => $livewire instanceof \Filament\Resources\Pages\EditRecord),
+                        $email,
 
                         Forms\Components\TextInput::make('user.password')
                             ->label('Senha')
@@ -64,14 +71,14 @@ class JogadoresResource extends Resource
                             ->rule('required')
                             ->dehydrateStateUsing(fn($state) => Hash::make($state))
                             ->visible(fn ($record) => !$record)
-                            ->hidden(fn ($livewire) => $livewire instanceof \Filament\Resources\Pages\EditRecord)
+                            ->hidden($hidden)
                             ->confirmed(),
 
                         Forms\Components\TextInput::make('user.password_confirmation')
                             ->label('Confirmar Senha')
                             ->password()
                             ->requiredWith('user.password')
-                            ->hidden(fn ($livewire) => $livewire instanceof \Filament\Resources\Pages\EditRecord),
+                            ->hidden($hidden),
                     ]),
 
                 Forms\Components\Section::make('Dados do Jogador')
@@ -81,7 +88,7 @@ class JogadoresResource extends Resource
                             ->markAsRequired()
                             ->rule('required')
                             ->options(Classe::pluck('nome', 'id'))
-                            ->disabled(fn ($livewire) => $livewire instanceof \Filament\Resources\Pages\EditRecord),
+                            ->disabled($disable),
                         Forms\Components\TextInput::make('xp')
                             ->label('XP')
                             ->numeric()

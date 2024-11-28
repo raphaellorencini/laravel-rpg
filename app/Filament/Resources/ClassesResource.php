@@ -3,10 +3,8 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ClassesResource\Pages;
-//use App\Filament\Resources\ClassesResource\RelationManagers;
 use App\Models\Classe;
 use App\Repositories\ClasseRepository;
-use Filament\Forms;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -18,8 +16,6 @@ use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Validation\Rules\Unique;
 
@@ -30,6 +26,10 @@ class ClassesResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     protected static ?int $navigationSort = 2;
+
+    protected static ?string $navigationLabel = 'Classes';
+
+    protected static ?string $label = 'Classes';
 
     public static function form(Form $form): Form
     {

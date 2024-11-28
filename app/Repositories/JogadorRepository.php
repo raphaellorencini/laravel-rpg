@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Models\Jogador;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 class JogadorRepository extends BaseRepository
 {
@@ -43,7 +44,9 @@ class JogadorRepository extends BaseRepository
      */
     public function findByFields(array $conditions): Collection
     {
-        $query = Jogador::query()->with('classe');
+        $query = Jogador::query()
+            ->leftJoin('classes', 'jogadores.classe_id', '=', 'classes.id')
+            ->leftJoin('users', 'jogadores.user_id', '=', 'users.id');
 
         foreach ($conditions as $field => $values) {
             if (is_array($values)) {
@@ -122,5 +125,22 @@ class JogadorRepository extends BaseRepository
                 ->where('classes.id', $filters['nome']);
         }
         return $query;
+    }
+
+    public function listByClass(array $conditions): Collection
+    {
+        $query = $this->getQueryBuilder()
+            ->leftJoin('classes', 'jogadores.classe_id', '=', 'classes.id')
+            ->leftJoin('users', 'jogadores.user_id', '=', 'users.id')
+            ->whereNot('user_id', Auth::user()->id);
+        foreach ($conditions as $field => $values) {
+            if (is_array($values)) {
+                $query->whereIn($field, $values);
+            } else {
+                $query->where($field, $values);
+            }
+        }
+
+        return $query->get();
     }
 }
