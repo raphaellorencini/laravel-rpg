@@ -90,6 +90,7 @@ class GuildasResource extends Resource
                         Repeater::make('jogadores')
                             ->defaultItems(4)
                             ->columns(2)
+                            ->addActionLabel('Adicionar Mais Jogadores')
                             ->schema([
                                 Select::make('classe_id')
                                     ->label('Classe')

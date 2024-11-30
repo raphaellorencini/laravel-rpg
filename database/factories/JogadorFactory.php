@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Classe;
 use App\Models\Jogador;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -21,7 +22,7 @@ class JogadorFactory extends Factory
     public function definition(): array
     {
         return [
-            'nome' => $this->faker->name(),
+            'user_id' => User::factory()->create()->id,
             'classe_id' => Classe::inRandomOrder()->first()->id,
             'xp' => $this->faker->numberBetween(70, 100),
             'confirmado' => $this->faker->boolean(80), // 80% de chance de ser confirmado

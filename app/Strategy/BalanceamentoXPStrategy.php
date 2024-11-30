@@ -22,9 +22,30 @@ class BalanceamentoXPStrategy implements BalanceamentoInterface
 
         // Verifica se tem ao menos um Mago ou Arqueiro
         $temMagoOuArqueiro = isset($jogadoresPorClasse['Mago']) || isset($jogadoresPorClasse['Arqueiro']);
+
         if (!$temMagoOuArqueiro) {
-            return ['error' => 'Está faltando um Mago ou Arqueiro para completar a guilda.'];
+            $numGuerreiros = $jogadoresPorClasse->get('Guerreiro')?->count() ?? 0;
+            $numClerigos = $jogadoresPorClasse->get('Clérigo')?->count() ?? 0;
+
+            // Verifica se já está equilibrado entre Guerreiros e Clérigos
+            $clerigosIdeais = intdiv($numGuerreiros, 2) + ($numGuerreiros % 2);
+
+            if ($numClerigos < $clerigosIdeais) {
+                $faltamClerigos = $clerigosIdeais - $numClerigos;
+                if ($faltamClerigos > 0) {
+                    return ['error' => "Está faltando um Mago ou Arqueiro para completar a guilda. Adicione {$faltamClerigos} Clérigo(s) para equilibrar."];
+                }
+            } elseif ($numGuerreiros < ($numClerigos * 2)) {
+                $faltamGuerreiros = ceil(($numClerigos * 2) / 2) - $numGuerreiros;
+                if ($faltamGuerreiros > 0) {
+                    return ['error' => "Está faltando um Mago ou Arqueiro para completar a guilda. Adicione {$faltamGuerreiros} Guerreiro(s) para equilibrar."];
+                }
+            }
+
+            // Se Guerreiros e Clérigos estiverem equilibrados, apenas falta Mago ou Arqueiro
+            return ['error' => "Está faltando um Mago ou Arqueiro para completar a guilda."];
         }
+
 
         // Distribui classes essenciais primeiro
         $classesEssenciais = ['Clérigo', 'Guerreiro'];
@@ -63,12 +84,12 @@ class BalanceamentoXPStrategy implements BalanceamentoInterface
         $jogadoresRestantes = $jogadores->filter(function ($jogador) use ($guildasJogadoresIds) {
             return !$guildasJogadoresIds->contains($jogador['id']);
         });
-        //$jogadoresRestantes = $jogadores->diff($guildas->pluck('jogadores')->flatten());
+
         foreach ($jogadoresRestantes as $jogador) {
             $guildaMaisFraca = $guildas->sortBy('xp_total')->first();
             if ($guildaMaisFraca->jogadores->count() < $guildaMaisFraca->maximo_jogadores) {
                 if ($guildaMaisFraca->adicionarJogador($jogador)) {
-                    $guildaMaisFraca->load('jogadores'); // Recarrega a relação após adicionar
+                    $guildaMaisFraca->load('jogadores');
                 }
             }
         }
