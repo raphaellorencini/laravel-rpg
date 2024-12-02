@@ -18,7 +18,7 @@ class BalanceamentoXPStrategy implements BalanceamentoInterface
         }
 
         // Organiza jogadores por classe
-        $jogadoresPorClasse = $jogadores->groupBy('nome');
+        $jogadoresPorClasse = $jogadores->groupBy('classe_nome');
 
         // Verifica se tem ao menos um Mago ou Arqueiro
         $temMagoOuArqueiro = isset($jogadoresPorClasse['Mago']) || isset($jogadoresPorClasse['Arqueiro']);
@@ -45,7 +45,6 @@ class BalanceamentoXPStrategy implements BalanceamentoInterface
             // Se Guerreiros e Clérigos estiverem equilibrados, apenas falta Mago ou Arqueiro
             return ['error' => "Está faltando um Mago ou Arqueiro para completar a guilda."];
         }
-
 
         // Distribui classes essenciais primeiro
         $classesEssenciais = ['Clérigo', 'Guerreiro'];

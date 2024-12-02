@@ -11,16 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('guilda_jogador', function (Blueprint $table) {
+        Schema::create('sessao_guilda', function (Blueprint $table) {
+            $table->foreignId('sessao_id');
             $table->foreignId('guilda_id');
-            $table->foreignId('jogador_id');
 
-            if (Schema::hasTable('guildas') && Schema::hasTable('jogadores')) {
+            if (Schema::hasTable('sessoes') && Schema::hasTable('guildas')) {
+                $table->foreign('sessao_id')->references('id')->on('sessoes')->onDelete('cascade');
                 $table->foreign('guilda_id')->references('id')->on('guildas')->onDelete('cascade');
-                $table->foreign('jogador_id')->references('id')->on('jogadores')->onDelete('cascade');
             }
 
-            $table->unique(['guilda_id', 'jogador_id']);
+            $table->unique(['sessao_id', 'guilda_id']);
             $table->timestamps();
         });
     }
@@ -30,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('guilda_jogador');
+        Schema::dropIfExists('sessao_guilda');
     }
 };

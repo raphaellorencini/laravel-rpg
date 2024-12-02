@@ -44,7 +44,9 @@ class JogadorRepository extends BaseRepository
      */
     public function findByFields(array $conditions): Collection
     {
+        $fieldsSelected = $this->getSelectFields();
         $query = Jogador::query()
+            ->select($fieldsSelected)
             ->leftJoin('classes', 'jogadores.classe_id', '=', 'classes.id')
             ->leftJoin('users', 'jogadores.user_id', '=', 'users.id');
 
@@ -105,9 +107,12 @@ class JogadorRepository extends BaseRepository
     /**
      * Retorna um QueryBuilder para Table List
      */
-    public function tableList(Builder $query): Builder
+    public function tableList(Builder $query, int $userId = null): Builder
     {
         $fieldsSelected = $this->getSelectFields();
+        if (!empty($userId)) {
+            $query->whereNot('user_id', $userId);
+        }
         return $query
                 ->select($fieldsSelected)
                 ->leftJoin('classes', 'jogadores.classe_id', '=', 'classes.id')
@@ -127,12 +132,12 @@ class JogadorRepository extends BaseRepository
         return $query;
     }
 
-    public function listByClass(array $conditions): Collection
+    public function listByClass(array $conditions): Collection|\Illuminate\Support\Collection
     {
         $query = $this->getQueryBuilder()
             ->leftJoin('classes', 'jogadores.classe_id', '=', 'classes.id')
             ->leftJoin('users', 'jogadores.user_id', '=', 'users.id')
-            ->whereNot('user_id', Auth::user()->id);
+            ->whereNot('user_id', Auth::id());
         foreach ($conditions as $field => $values) {
             if (is_array($values)) {
                 $query->whereIn($field, $values);
@@ -140,7 +145,13 @@ class JogadorRepository extends BaseRepository
                 $query->where($field, $values);
             }
         }
-
-        return $query->get();
+        return $query
+            ->orderByDesc('xp')
+            ->orderBy('users.name')
+            ->get()
+            ->mapWithKeys(function ($jogador) {
+                $nomeXp = "{$jogador->user->name} (XP: {$jogador->xp})";
+                return [$jogador->id => $nomeXp];
+            });
     }
 }

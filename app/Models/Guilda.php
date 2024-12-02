@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Guilda extends Model
 {
@@ -17,12 +18,17 @@ class Guilda extends Model
         'xp_total',
     ];
 
-    public function user() {
+    public function user(): BelongsTo
+    {
         return $this->belongsTo(User::class);
     }
 
     public function jogadores(): BelongsToMany {
         return $this->belongsToMany(Jogador::class, 'guilda_jogador');
+    }
+
+    public function sessoes(): BelongsToMany {
+        return $this->belongsToMany(Sessao::class, 'sessao_guilda');
     }
 
     public function adicionarJogador(array $jogador): bool

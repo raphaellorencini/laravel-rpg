@@ -23,7 +23,7 @@ class CreateGuildas extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $data['user_id'] = Auth::user()->id;
+        $data['user_id'] = Auth::id();
         return $data;
     }
 }

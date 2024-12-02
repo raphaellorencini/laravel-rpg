@@ -60,13 +60,24 @@ class GuildasResource extends Resource
 
     public static function table(Table $table): Table
     {
+        /**
+         * @var GuildaRepository $repository
+         */
         $repository = app(GuildaRepository::class);
+
+        /**
+         * @var JogadorRepository $jogadorRepository
+         */
         $jogadorRepository = app(JogadorRepository::class);
+
+        /**
+         * @var ClasseRepository $classeRepository
+         */
         $classeRepository = app(ClasseRepository::class);
 
         return $table
             ->modifyQueryUsing(function (Builder $query) use ($repository) {
-                return $repository->tableList($query, Auth::user()->id);
+                return $repository->tableList($query, Auth::id());
             })
             ->columns([
                 TextColumn::make('nome')
@@ -84,7 +95,8 @@ class GuildasResource extends Resource
             ])
             ->actions([
                 Action::make('adicionarJogadores')
-                    ->label('Adicionar Jogadores')
+                    ->hiddenLabel()
+                    ->tooltip('Adicionar Jogadores')
                     ->icon('heroicon-o-user-plus')
                     ->form([
                         Repeater::make('jogadores')
@@ -105,13 +117,14 @@ class GuildasResource extends Resource
                                         if ($classeId) {
                                             return $jogadorRepository
                                                 ->listByClass(['classe_id' => $classeId])
-                                                ->mapWithKeys(function ($jogador) {
+                                                /*->mapWithKeys(function ($jogador) {
                                                     $nomeXp = "{$jogador->user->name} (XP: {$jogador->xp})";
                                                     return [$jogador->id => $nomeXp];
-                                                });
+                                                })*/;
                                         }
                                         return [];
-                                    }),
+                                    })
+                                    ->disabled(fn (callable $get) => !$get('classe_id')),
                             ])
                     ])
                     ->action(function (array $data, Guilda $record) {
@@ -142,7 +155,8 @@ class GuildasResource extends Resource
                         }
                     }),
                 ViewAction::make('viewJogadores')
-                    ->label('Ver Jogadores')
+                    ->hiddenLabel()
+                    ->tooltip('Ver Jogadores')
                     ->icon('heroicon-o-users')
                     ->url(fn (Guilda $record) => static::getUrl('view-guilda-jogadores', ['record' => $record->id])),
                 Tables\Actions\EditAction::make(),

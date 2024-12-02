@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\DB;
 
 class GuildasController extends Controller
 {
+    use AccessTrait;
+
     public function __construct(
         public JogadorRepository $jogadorRepository,
         public GuildaRepository $guildaRepository,
@@ -20,21 +22,21 @@ class GuildasController extends Controller
 
     public function index(Request $request)
     {
-        $data = $request->all();
+        $data = $request->validate([
+            'jogadores' => 'required',
+            'guilda' => 'required',
+        ]);
+
+        $authorized = $this->authorized($request);
+        if (!$authorized) {
+            return response(['error' => 'Não autorizado.'], 401);
+        }
 
         $jogadoresIds = $data['jogadores'];
         $guildaId = $data['guilda'];
 
-        $apiAccessKey = $data['api_access_key'] ?? null;
-        if (isset($data['api_access_key'])) {
-            $apiAccessKey = decrypt($data['api_access_key']);
-        }
-        if ($apiAccessKey !== config('app.api_access_key')) {
-            abort(401);
-        }
-
         //Reseta Dados da Guilda
-        DB::table('guildas')->where('id', 1)->update(['xp_total' => 0]);
+        DB::table('guildas')->where('id', $guildaId)->update(['xp_total' => 0]);
         DB::table('guilda_jogador')->where('guilda_id', $guildaId)->delete();
 
         $guildas = $this->guildaRepository->findByFields(['id' => [$guildaId]]);

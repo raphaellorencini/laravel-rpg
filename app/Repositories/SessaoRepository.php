@@ -2,15 +2,13 @@
 
 namespace App\Repositories;
 
-use App\Models\Guilda;
-use App\Models\User;
+use App\Models\Sessao;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\DB;
 
-class GuildaRepository extends BaseRepository
+class SessaoRepository extends BaseRepository
 {
-    public function __construct(Guilda $model)
+    public function __construct(Sessao $model)
     {
         parent::__construct($model);
     }
@@ -18,22 +16,22 @@ class GuildaRepository extends BaseRepository
 
     public function getQueryBuilder(): Builder
     {
-        return Guilda::query();
+        return Sessao::query();
     }
 
     public function getAll(): Collection
     {
-        return Guilda::all();
+        return Sessao::all();
     }
 
-    public function findById(int $id): ?Guilda
+    public function findById(int $id): ?Sessao
     {
-        return Guilda::find($id);
+        return Sessao::findOrFail($id);
     }
 
     public function findByName($name)
     {
-        return Guilda::where('nome', $name)->get();
+        return Sessao::where('nome', $name)->get();
     }
 
     /**
@@ -46,7 +44,7 @@ class GuildaRepository extends BaseRepository
      */
     public function findByFields(array $conditions): Collection
     {
-        $query = Guilda::query()->with('jogadores');
+        $query = Sessao::query();
 
         foreach ($conditions as $field => $values) {
             if (is_array($values)) {
@@ -60,12 +58,12 @@ class GuildaRepository extends BaseRepository
     }
 
 
-    public function create(array $data): Guilda
+    public function create(array $data): Sessao
     {
-        return Guilda::create($data);
+        return Sessao::create($data);
     }
 
-    public function update(int $id, array $data): ?Guilda
+    public function update(int $id, array $data): ?Sessao
     {
         $obj = $this->findById($id);
 
@@ -100,6 +98,7 @@ class GuildaRepository extends BaseRepository
         if (!empty($userId)) {
             $query->where('user_id', $userId);
         }
+
         return $query;
     }
 
@@ -108,48 +107,9 @@ class GuildaRepository extends BaseRepository
      */
     public function applyFilters(Builder $query, array $filters): Builder
     {
-        if (isset($filters['user_id']) && !empty($filters['user_id'])) {
-            $query->where('user_id', $filters['user_id']);
-        }
-
-        if (isset($filters['not_user_id']) && !empty($filters['not_user_id'])) {
-            $query->whereNot('user_id', $filters['not_user_id']);
-        }
-
-        if (isset($filters['between_xp_total']) && !empty($filters['between_xp_total'])) {
-            $query->whereBetween('xp_total', $filters['between_xp_total']);
-        }
-
         if (isset($filters['nome']) && !empty($filters['nome'])) {
             $query->where('id', $filters['nome']);
         }
         return $query;
-    }
-
-
-    public function getConfirmados() {
-        return User::where('confirmado', true)->get();
-    }
-
-    public function criarGuilda($dados): Guilda {
-        return Guilda::create($dados);
-    }
-
-    public function selectField(array $filters): Collection|\Illuminate\Support\Collection
-    {
-        $query = $this->applyFilters($this->getQueryBuilder(), $filters);
-        return $query
-            ->whereNotExists(function ($query) {
-                $query->select(DB::raw(1))
-                    ->from('sessao_guilda')
-                    ->whereColumn('sessao_guilda.guilda_id', 'guildas.id');
-            })
-            ->orderByDesc('xp_total')
-            ->orderBy('nome')
-            ->get()
-            ->mapWithKeys(function ($guilda) {
-                $nomeXp = "{$guilda->nome} (XP: {$guilda->xp_total})";
-                return [$guilda->id => $nomeXp];
-            });
     }
 }

@@ -25,11 +25,11 @@ class ClassesResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    protected static ?int $navigationSort = 2;
-
     protected static ?string $navigationLabel = 'Classes';
 
     protected static ?string $label = 'Classes';
+
+    protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
     {
@@ -46,6 +46,9 @@ class ClassesResource extends Resource
 
     public static function table(Table $table): Table
     {
+        /**
+         * @var ClasseRepository $repository
+         */
         $repository = app(ClasseRepository::class);
 
         return $table

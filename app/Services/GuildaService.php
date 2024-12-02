@@ -13,7 +13,7 @@ class GuildaService
     public function distribuirGuildas()
     {
         // Pega as guildas criadas pelo usuário autenticado
-        $guildas = Guilda::where('user_id', Auth::user()->id)->get();
+        $guildas = Guilda::where('user_id', Auth::id())->get();
 
         // Verifica se há guildas suficientes
         $numGuildas = $guildas->count();

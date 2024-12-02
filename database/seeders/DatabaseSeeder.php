@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Classe;
 use App\Models\Guilda;
 use App\Models\Jogador;
+use App\Models\Sessao;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Eloquent\Factories\Sequence;
@@ -83,6 +84,15 @@ class DatabaseSeeder extends Seeder
                 return [
                     'nome' => $titulo,
                     'maximo_jogadores' => rand(4, 8),
+                    'user_id' => $i + 1,
+                ];
+            })->create();
+
+            Sessao::factory()->count(2)->sequence(function (Sequence $sequence) use ($i, &$tituloGuildas) {
+                $titulo = $tituloGuildas[0];
+                array_shift($tituloGuildas);
+                return [
+                    'nome' => 'Sessão - '.$titulo,
                     'user_id' => $i + 1,
                 ];
             })->create();

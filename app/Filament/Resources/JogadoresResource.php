@@ -19,6 +19,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class JogadoresResource extends Resource
@@ -27,11 +28,11 @@ class JogadoresResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-user-circle';
 
-    protected static ?int $navigationSort = 1;
-
     protected static ?string $navigationLabel = 'Jogadores';
 
     protected static ?string $label = 'Jogadores';
+
+    protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
     {
@@ -106,11 +107,14 @@ class JogadoresResource extends Resource
 
     public static function table(Table $table): Table
     {
+        /**
+         * @var JogadorRepository $repository
+         */
         $repository = app(JogadorRepository::class);
 
         return $table
             ->modifyQueryUsing(function (Builder $query) use ($repository) {
-                return $repository->tableList($query);
+                return $repository->tableList($query, Auth::id());
             })
             ->columns([
                 TextColumn::make('username')

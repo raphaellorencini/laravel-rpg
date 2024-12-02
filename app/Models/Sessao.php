@@ -5,19 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class Jogador extends Model
+class Sessao extends Model
 {
     use HasFactory;
 
-    protected $table = 'jogadores';
+    protected $table = 'sessoes';
 
     protected $fillable = [
-        'classe_id',
-        'xp',
-        'confirmado',
-        'image',
         'user_id',
+        'nome',
     ];
 
     public function user(): BelongsTo
@@ -25,8 +23,7 @@ class Jogador extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function classe(): BelongsTo
-    {
-        return $this->belongsTo(Classe::class);
+    public function guildas(): BelongsToMany {
+        return $this->belongsToMany(Guilda::class, 'sessao_guilda');
     }
 }
