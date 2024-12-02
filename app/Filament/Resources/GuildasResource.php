@@ -116,11 +116,7 @@ class GuildasResource extends Resource
                                         $classeId = $get('classe_id');
                                         if ($classeId) {
                                             return $jogadorRepository
-                                                ->listByClass(['classe_id' => $classeId])
-                                                /*->mapWithKeys(function ($jogador) {
-                                                    $nomeXp = "{$jogador->user->name} (XP: {$jogador->xp})";
-                                                    return [$jogador->id => $nomeXp];
-                                                })*/;
+                                                ->listByClass(['classe_id' => $classeId]);
                                         }
                                         return [];
                                     })
