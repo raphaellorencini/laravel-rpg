@@ -98,6 +98,7 @@ class GuildasResource extends Resource
                     ->hiddenLabel()
                     ->tooltip('Adicionar Jogadores')
                     ->icon('heroicon-o-user-plus')
+                    ->color('info')
                     ->form([
                         Repeater::make('jogadores')
                             ->defaultItems(4)
@@ -154,6 +155,7 @@ class GuildasResource extends Resource
                     ->hiddenLabel()
                     ->tooltip('Ver Jogadores')
                     ->icon('heroicon-o-users')
+                    ->color('warning')
                     ->url(fn (Guilda $record) => static::getUrl('view-guilda-jogadores', ['record' => $record->id])),
                 Tables\Actions\EditAction::make(),
                 DeleteAction::make()

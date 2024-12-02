@@ -80,6 +80,7 @@ class SessoesResource extends Resource
                     ->hiddenLabel()
                     ->tooltip('Selecionar Guildas')
                     ->icon('heroicon-o-user-group')
+                    ->color('info')
                     ->form([
                         Forms\Components\Repeater::make('guildas')
                             ->defaultItems(1)
@@ -149,7 +150,7 @@ class SessoesResource extends Resource
                     ->url(fn (Sessao $record) => static::getUrl('view-sessao', ['record' => $record->id])),
                 Tables\Actions\Action::make('excluirGuilda')
                     ->hiddenLabel()
-                    ->tooltip('Excluir Guilda')
+                    ->tooltip('Remover Guildas')
                     ->icon('heroicon-o-user-minus')
                     ->color('danger')
                     ->requiresConfirmation()
