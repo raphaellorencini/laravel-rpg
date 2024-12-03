@@ -70,7 +70,7 @@ class SessoesController extends Controller
         $sessao = $this->sessaoRepository->findById($data['sessao_id']);
         $sessao->guildas()->detach();
         $sessao->guildas()->attach($guildas);
-        //$sessao->load('guildas');
+
         return $sessao;
     }
 
