@@ -2,20 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Repositories\GuildaRepository;
-use App\Repositories\JogadorRepository;
-use App\Strategy\BalanceamentoXPStrategy;
+use App\Services\GuildaService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class GuildasController extends Controller
 {
     use AccessTrait;
 
     public function __construct(
-        public JogadorRepository $jogadorRepository,
-        public GuildaRepository $guildaRepository,
-        public BalanceamentoXPStrategy $balanceamentoXPStrategy,
+        public GuildaService $guildaService,
     )
     {
     }
@@ -36,15 +31,8 @@ class GuildasController extends Controller
         $guildaId = $data['guilda'];
 
         //Reseta Dados da Guilda
-        DB::table('guildas')->where('id', $guildaId)->update(['xp_total' => 0]);
-        DB::table('guilda_jogador')->where('guilda_id', $guildaId)->delete();
+        $this->guildaService->resetDatabase($guildaId);
 
-        $guildas = $this->guildaRepository->findByFields(['id' => [$guildaId]]);
-        $jogadores = $this->jogadorRepository->findByFields([
-            'confirmado' => true,
-            'jogadores.id' => $jogadoresIds
-        ]);
-
-        return $this->balanceamentoXPStrategy->balancear($jogadores->toArray(), $guildas);
+        return $this->guildaService->balancear($jogadoresIds, $guildaId);
     }
 }

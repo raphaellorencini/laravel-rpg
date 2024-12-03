@@ -4,43 +4,34 @@ namespace App\Services;
 
 use App\Models\Guilda;
 use App\Repositories\GuildaRepository;
+use App\Repositories\JogadorRepository;
 use App\Strategy\BalanceamentoXPStrategy;
-use App\Models\Jogador;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class GuildaService
 {
-    public function distribuirGuildas()
+    public function __construct(
+        public JogadorRepository $jogadorRepository,
+        public GuildaRepository $guildaRepository,
+        public BalanceamentoXPStrategy $balanceamentoXPStrategy,
+    )
     {
-        // Pega as guildas criadas pelo usuário autenticado
-        $guildas = Guilda::where('user_id', Auth::id())->get();
+    }
 
-        // Verifica se há guildas suficientes
-        $numGuildas = $guildas->count();
-        if ($numGuildas < 2) {
-            return response()->json(['error' => 'Você precisa criar pelo menos duas guildas.'], 400);
-        }
+    public function resetDatabase(int $guildaId)
+    {
+        Guilda::where('id', $guildaId)->update(['xp_total' => 0]);
+        DB::table('guilda_jogador')->where('guilda_id', $guildaId)->delete();
+    }
 
-        // Pega os jogadores confirmados
-        $jogadores = Jogador::where('confirmado', true)->with('classe')->get()->toArray();
+    public function balancear(array $jogadoresIds, int $guildaId): array
+    {
+        $guildas = $this->guildaRepository->findByFields(['id' => [$guildaId]]);
+        $jogadores = $this->jogadorRepository->findByFields([
+            'confirmado' => true,
+            'jogadores.id' => $jogadoresIds
+        ])->toArray();
 
-        // Balanceamento usando a estratégia
-        $strategy = new BalanceamentoXPStrategy();
-        $guildasDistribuidas = $strategy->balancear($jogadores, $numGuildas);
-
-        // Salva a distribuição nas guildas existentes
-        foreach ($guildasDistribuidas as $index => $guilda) {
-            $guildaExistente = $guildas[$index]; // Pega a guilda existente
-
-            // Remove os jogadores anteriores, se houver, para evitar duplicação
-            $guildaExistente->jogadores()->detach();
-
-            // Adiciona os novos jogadores
-            $guildaExistente->jogadores()->attach(collect($guilda['jogadores'])->pluck('id'));
-
-            // Atualiza o XP total da guilda
-            $guildaExistente->xp_total = collect($guilda['jogadores'])->sum('xp');
-            $guildaExistente->save();
-        }
+        return $this->balanceamentoXPStrategy->balancear($jogadores, $guildas);
     }
 }

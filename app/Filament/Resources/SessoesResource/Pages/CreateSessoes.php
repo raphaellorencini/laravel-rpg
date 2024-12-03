@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\SessoesResource\Pages;
 
 use App\Filament\Resources\SessoesResource;
-use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\Auth;
 

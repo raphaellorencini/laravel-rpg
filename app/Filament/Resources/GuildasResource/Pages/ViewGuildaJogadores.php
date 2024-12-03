@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\GuildasResource\Pages;
 
 use App\Filament\Resources\GuildasResource;
-use Filament\Actions;
 use Filament\Infolists\Components\IconEntry;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\Section;

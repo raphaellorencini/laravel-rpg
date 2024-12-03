@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Classe;
 use App\Models\Guilda;
 use App\Models\Jogador;
 use App\Repositories\ClasseRepository;
