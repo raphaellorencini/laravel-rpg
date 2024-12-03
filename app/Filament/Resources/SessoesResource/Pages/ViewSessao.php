@@ -3,16 +3,35 @@
 namespace App\Filament\Resources\SessoesResource\Pages;
 
 use App\Filament\Resources\SessoesResource;
-use Filament\Infolists\Components\Actions\Action;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
+use Filament\Actions\Action;
 
 class ViewSessao extends ViewRecord
 {
     protected static string $resource = SessoesResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('excluirGuilda')
+                ->label('Remover Guildas')
+                ->icon('heroicon-o-user-minus')
+                ->color('danger')
+                ->requiresConfirmation()
+                ->action(function ($record) {
+                    $record->guildas()->detach();
+
+                    Notification::make()
+                        ->success()
+                        ->title('Guilda excluída da sessão com sucesso!')
+                        ->send();
+                }),
+        ];
+    }
 
     public function infolist(Infolist $infolist): Infolist
     {
@@ -31,14 +50,14 @@ class ViewSessao extends ViewRecord
                     TextEntry::make('guilda')
                         ->label('Guilda')
                         ->state($guilda->nome)
-                        ->columnSpan(1),
+                        ->columnSpan(2),
                     TextEntry::make('xp_total')
                         ->label('XP Total')
                         ->state($guilda->xp_total)
                         ->badge()
                         ->columnSpan(1),
                     TextEntry::make('total_jogadores')
-                        ->label('Jogadores')
+                        ->label('Jogadores Ativos')
                         ->state($guilda->jogadores()->count())
                         ->badge()
                         ->color('warning')

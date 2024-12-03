@@ -69,9 +69,9 @@ class BalanceamentoXPStrategy implements BalanceamentoInterface
             shuffle($magoArqueiro);
             foreach ($magoArqueiro as $value) {
                 if (isset($jogadoresPorClasse[$value])) {
-                    $jogMagoArqueiro = $jogadoresPorClasse[$value]->pop();
-                    if ($jogMagoArqueiro) {
-                        $guilda->adicionarJogador($jogMagoArqueiro);
+                    $jogadorMagoArqueiro = $jogadoresPorClasse[$value]->pop();
+                    if ($jogadorMagoArqueiro) {
+                        $guilda->adicionarJogador($jogadorMagoArqueiro);
                     }
                 }
             }

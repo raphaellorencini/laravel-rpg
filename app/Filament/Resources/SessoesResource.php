@@ -110,7 +110,7 @@ class SessoesResource extends Resource
                                         return $guildaRepository
                                             ->selectField([
                                                 'not_user_id' => Auth::id(),
-                                                'between_xp_total' => [$xpSelecionado - 10, $xpSelecionado + 10]
+                                                'between_xp_total' => [$xpSelecionado - 100, $xpSelecionado + 100]
                                             ]);
                                     })
                                     ->required()
@@ -148,20 +148,6 @@ class SessoesResource extends Resource
                     ->icon('heroicon-o-rectangle-group')
                     ->color('warning')
                     ->url(fn (Sessao $record) => static::getUrl('view-sessao', ['record' => $record->id])),
-                Tables\Actions\Action::make('excluirGuilda')
-                    ->hiddenLabel()
-                    ->tooltip('Remover Guildas')
-                    ->icon('heroicon-o-user-minus')
-                    ->color('danger')
-                    ->requiresConfirmation()
-                    ->action(function ($record) {
-                        $record->guildas()->detach();
-
-                        Notification::make()
-                            ->success()
-                            ->title('Guilda excluída da sessão com sucesso!')
-                            ->send();
-                    }),
                 Tables\Actions\EditAction::make(),
                 DeleteAction::make()
                     ->after(function ($record, Tables\Actions\DeleteAction $action) {

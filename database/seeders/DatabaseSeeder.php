@@ -73,12 +73,29 @@ class DatabaseSeeder extends Seeder
             'Cavaleiros da Aurora',
             'Vingadores Sombrios',
             'Clã dos Lobos',
+            'Mestres da Tormenta',
+            'Espadas da Justiça',
+            'Guerreiros do Amanhecer',
+            'Defensores da Honra',
+            'Filhos do Trovão',
+            'Sentinelas da Liberdade',
+            'Legião dos Esquecidos',
+            'Ordem dos Druidas',
+            'Clã dos Falcões',
+            'Irmandade do Aço',
+            'Guardiões da Floresta',
+            'Caçadores das Sombras',
+            'Lâminas da Vingança',
+            'Aliança dos Renegados',
+            'Vingadores da Noite',
         ];
         $tituloGuildas = $guildas;
         shuffle($tituloGuildas);
 
+        $guildas = collect();
+        $sessoes = collect();
         for ($i = 0; $i < 2; $i++) {
-            Guilda::factory()->count(5)->sequence(function (Sequence $sequence) use ($i, &$tituloGuildas) {
+            $guildasLista = Guilda::factory()->count(15)->sequence(function (Sequence $sequence) use ($i, &$tituloGuildas) {
                 $titulo = $tituloGuildas[0];
                 array_shift($tituloGuildas);
                 return [
@@ -87,18 +104,23 @@ class DatabaseSeeder extends Seeder
                     'user_id' => $i + 1,
                 ];
             })->create();
+            foreach ($guildasLista as $guilda) {
+                $guildas->add($guilda);
+            }
 
-            Sessao::factory()->count(2)->sequence(function (Sequence $sequence) use ($i, &$tituloGuildas) {
-                $titulo = $tituloGuildas[0];
-                array_shift($tituloGuildas);
+            $sessoesLista = Sessao::factory()->count(2)->sequence(function (Sequence $sequence) use ($i) {
                 return [
-                    'nome' => 'Sessão - '.$titulo,
+                    'nome' => 'Sessão - '.rand(1000, 9999),
                     'user_id' => $i + 1,
                 ];
             })->create();
+            foreach ($sessoesLista as $sessao) {
+                $sessoes->add($sessao);
+            }
         }
 
-        Classe::all()->each(function ($classe) use ($titulos) {
+        $jogadores = collect();
+        Classe::all()->each(function ($classe) use ($titulos, $jogadores) {
             $titulosEmbaralhados = $titulos;
             shuffle($titulosEmbaralhados);
 
@@ -110,13 +132,13 @@ class DatabaseSeeder extends Seeder
                     'email' => preg_replace('/[\x{0300}-\x{036F}]/ui', '', \Normalizer::normalize(mb_strtolower($classe->nome), \Normalizer::FORM_D)) . $i + 1 . '@test.com',
                 ]);
                 $img = strtolower(substr($classe->nome, 0, 1)). rand(1, 4);
-                Jogador::create([
+                $jogadores->add(Jogador::create([
                     'user_id' => $user->id,
                     'classe_id' => $classe->id,
                     'image' => "img/{$img}.jpg",
                     'xp' => rand(70, 100),
                     'confirmado' => true,
-                ]);
+                ]));
             }
         });
     }

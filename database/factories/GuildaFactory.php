@@ -19,23 +19,7 @@ class GuildaFactory extends Factory
      */
     public function definition() {
         return [
-            'nome' => $this->faker->unique()->randomElement([
-                'Guardiões da Luz',
-                'Sombras Eternas',
-                'Lâminas do Destino',
-                'Sentinelas do Crepúsculo',
-                'Guerreiros da Tempestade',
-                'Filhos da Noite',
-                'Protetores do Reino',
-                'Caçadores de Dragões',
-                'Irmandade da Fênix',
-                'Legião dos Imortais',
-                'Aliança dos Heróis',
-                'Ordem dos Magos',
-                'Cavaleiros da Aurora',
-                'Vingadores Sombrios',
-                'Clã dos Lobos',
-            ]),
+            'nome' => 'Test '.rand(1000, 9999),
         ];
     }
 }

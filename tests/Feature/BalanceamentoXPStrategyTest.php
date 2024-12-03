@@ -82,7 +82,8 @@ class BalanceamentoXPStrategyTest extends TestCase
                 $xp = rand($this->xpMinimo, $this->xpMaximo-1);
             }
             $jogador = Jogador::factory()->create(['confirmado' => true, 'classe_id' => $this->classeId($classe), 'xp' => $xp]);
-            $jogador->nome = $jogador->classe->nome;
+            $jogador->classe_nome = $jogador->classe->nome;
+            $jogador->load('user');
             $this->jogadores->add($jogador);
         }
     }
