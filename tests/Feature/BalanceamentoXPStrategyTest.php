@@ -65,11 +65,10 @@ class BalanceamentoXPStrategyTest extends TestCase
         return $data['id'];
     }
 
-    protected function guildaCreate(int $userId, int $maximoJogadores): Collection
+    protected function guildaCreate(int $maximoJogadores): Collection
     {
         return Guilda::factory()->count(1)->create([
             'nome' => $this->guildasNomes[0],
-            'user_id' => $userId,
             'maximo_jogadores' => $maximoJogadores,
         ]);
     }
@@ -91,11 +90,10 @@ class BalanceamentoXPStrategyTest extends TestCase
     #[Test]
     public function test_balanceamento_com_sucesso()
     {
-        $userId = 1;
         $maximoJogadores = 6;
 
         // Criar guildas e jogadores de teste
-        $guildas = $this->guildaCreate($userId, $maximoJogadores);
+        $guildas = $this->guildaCreate($maximoJogadores);
 
         // Criar jogadores com classes essenciais e XP variado
         $this->jogadoresCreate('Guerreiro');
@@ -107,7 +105,7 @@ class BalanceamentoXPStrategyTest extends TestCase
         $jogadores = $this->jogadores;
 
         // Chamar o método de balanceamento
-        $resultado = $this->strategy->balancear($jogadores->toArray(), $guildas);
+        $resultado = $this->strategy->balancear($jogadores, $guildas);
 
         // Verificar que não há erros
         $this->assertIsArray($resultado);
@@ -123,11 +121,10 @@ class BalanceamentoXPStrategyTest extends TestCase
     #[Test]
     public function test_balanceamento_falha_com_jogadores_insuficientes()
     {
-        $userId = 1;
-        $maximoJogadores = 5;
+        $maximoJogadores = 1;
 
         // Criar guilda usando o método auxiliar
-        $guildas = $this->guildaCreate($userId, $maximoJogadores);
+        $guildas = $this->guildaCreate($maximoJogadores);
 
         // Criar jogadores usando o método auxiliar (apenas 3 jogadores)
         $this->jogadoresCreate('Guerreiro', xpMaximo: true);
@@ -135,21 +132,20 @@ class BalanceamentoXPStrategyTest extends TestCase
         $this->jogadoresCreate('Mago');
         $jogadores = $this->jogadores;
 
-        $resultado = $this->strategy->balancear($jogadores->toArray(), $guildas);
+        $resultado = $this->strategy->balancear($jogadores, $guildas);
 
         // Verifica se retorna erro
         $this->assertArrayHasKey('error', $resultado);
-        $this->assertEquals('Número insuficiente de jogadores para formar a guilda.', $resultado['error']);
+        $this->assertEquals('A guilda não possui jogadores suficientes. Ajuste o número total de jogadores para garantir pelo menos 1 Guerreiro e 1 Clérigo por guilda.', $resultado['error']);
     }
 
     #[Test]
     public function test_balanceamento_falha_sem_classes_essenciais()
     {
-        $userId = 1;
         $maximoJogadores = 4;
 
         // Criar guilda usando o método auxiliar
-        $guildas = $this->guildaCreate($userId, $maximoJogadores);
+        $guildas = $this->guildaCreate($maximoJogadores);
 
         // Criar jogadores usando o método auxiliar (sem Guerreiro ou Clérigo)
         $this->jogadoresCreate('Guerreiro', xpMaximo: true);
@@ -157,7 +153,7 @@ class BalanceamentoXPStrategyTest extends TestCase
         $this->jogadoresCreate('Clérigo', 2);
         $jogadores = $this->jogadores;
 
-        $resultado = $this->strategy->balancear($jogadores->toArray(), $guildas);
+        $resultado = $this->strategy->balancear($jogadores, $guildas);
 
         // Verifica se retorna erro
         $this->assertArrayHasKey('error', $resultado);
@@ -166,92 +162,45 @@ class BalanceamentoXPStrategyTest extends TestCase
 
     ###########################################
     #[Test]
-    public function test_sugestao_falta_1_clerigo()
+    public function test_sugestao_falta_clerigo()
     {
-        $userId = 1;
         $maximoJogadores = 8;
 
         // Criar guilda com o método auxiliar
-        $guildas = $this->guildaCreate($userId, $maximoJogadores);
+        $guildas = $this->guildaCreate($maximoJogadores);
 
         // Criar 2 Guerreiros e 1 Clérigo usando o método auxiliar
         $this->jogadoresCreate('Guerreiro', 3);
         $this->jogadoresCreate('Clérigo', 1);
 
-        $resultado = $this->strategy->balancear($this->jogadores->toArray(), $guildas);
+        $resultado = $this->strategy->balancear($this->jogadores, $guildas);
 
         // Verifica a sugestão correta
         $this->assertArrayHasKey('error', $resultado);
         $this->assertEquals(
-            'Está faltando um Mago ou Arqueiro para completar a guilda. Adicione 1 Clérigo(s) para equilibrar.',
+            'Está faltando um Mago ou Arqueiro para completar a guilda. Adicione ao menos 1 Clérigo para equilibrar.',
             $resultado['error']
         );
     }
 
     #[Test]
-    public function test_sugestao_falta_1_guerreiro()
+    public function test_sugestao_falta_guerreiro()
     {
-        $userId = 1;
         $maximoJogadores = 8;
 
         // Criar guilda com o método auxiliar
-        $guildas = $this->guildaCreate($userId, $maximoJogadores);
+        $guildas = $this->guildaCreate($maximoJogadores);
 
         // Criar 2 Guerreiro e 3 Clérigos
         $this->jogadoresCreate('Guerreiro', 2);
         $this->jogadoresCreate('Clérigo', 3);
 
-        $resultado = $this->strategy->balancear($this->jogadores->toArray(), $guildas);
+        $resultado = $this->strategy->balancear($this->jogadores, $guildas);
 
         // Verifica a sugestão correta
         $this->assertArrayHasKey('error', $resultado);
         $this->assertEquals(
-            'Está faltando um Mago ou Arqueiro para completar a guilda. Adicione 1 Guerreiro(s) para equilibrar.',
-            $resultado['error']
-        );
-    }
-
-    #[Test]
-    public function test_sugestao_falta_2_clerigos()
-    {
-        $userId = 1;
-        $maximoJogadores = 8;
-
-        // Criar guilda com o método auxiliar
-        $guildas = $this->guildaCreate($userId, $maximoJogadores);
-
-        // Criar 3 Guerreiros
-        $this->jogadoresCreate('Guerreiro', 4);
-
-        $resultado = $this->strategy->balancear($this->jogadores->toArray(), $guildas);
-
-        // Verifica a sugestão correta
-        $this->assertArrayHasKey('error', $resultado);
-        $this->assertEquals(
-            'Está faltando um Mago ou Arqueiro para completar a guilda. Adicione 2 Clérigo(s) para equilibrar.',
-            $resultado['error']
-        );
-    }
-
-    #[Test]
-    public function test_sugestao_falta_2_guerreiros()
-    {
-        $userId = 1;
-        $maximoJogadores = 8;
-
-        // Criar guilda com o método auxiliar
-        $guildas = $this->guildaCreate($userId, $maximoJogadores);
-
-        // Criar 4 Clérigos
-        $this->jogadoresCreate('Guerreiro', 2);
-        $this->jogadoresCreate('Clérigo', 4);
-
-        $resultado = $this->strategy->balancear($this->jogadores->toArray(), $guildas);
-
-        // Verifica a sugestão correta
-        $this->assertArrayHasKey('error', $resultado);
-        $this->assertEquals(
-            'Está faltando um Mago ou Arqueiro para completar a guilda. Adicione 2 Guerreiro(s) para equilibrar.',
+            'Está faltando um Mago ou Arqueiro para completar a guilda. Adicione ao menos 1 Guerreiro para equilibrar.',
             $resultado['error']
         );
     }

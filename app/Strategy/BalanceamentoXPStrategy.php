@@ -7,12 +7,37 @@ use Illuminate\Support\Collection;
 
 class BalanceamentoXPStrategy implements BalanceamentoInterface
 {
-    public function balancear(array $jogadores, array|Guilda|Collection $guildas): array
+    public function balancear(array|Collection $jogadores, array|Guilda|Collection $guildas): array
     {
-        $jogadores = collect($jogadores);
+        if (is_array($guildas)) {
+            $guildas = collect($guildas);
+        }
+
+        if (is_array($jogadores)) {
+            $jogadores = collect($jogadores);
+        }
+
+        // Organiza jogadores por classe
+        $jogadoresPorClasse = $jogadores->groupBy('classe_nome');
+
+        // Verifica se há Guerreiros e Clérigos suficientes
+        $numGuildas = $guildas->count();
+        $numGuerreiros = $jogadoresPorClasse->get('Guerreiro')?->count() ?? 0;
+        $numClerigos = $jogadoresPorClasse->get('Clérigo')?->count() ?? 0;
+
+        // Cálculo do número mínimo necessário
+        if ($numGuerreiros < $numGuildas) {
+            $faltamGuerreiros = $numGuildas - $numGuerreiros;
+            return ['error' => "Número insuficiente de Guerreiros. Adicione {$faltamGuerreiros} Guerreiro(s) para formar as guildas."];
+        }
+
+        if ($numClerigos < $numGuildas) {
+            $faltamClerigos = $numGuildas - $numClerigos;
+            return ['error' => "Número insuficiente de Clérigos. Adicione {$faltamClerigos} Clérigo(s) para formar as guildas."];
+        }
 
         // Verifica se o número total de jogadores é suficiente
-        $numMinimoJogadores = $guildas->count() * 4;
+        $numMinimoJogadores = $guildas->count();
         if ($jogadores->count() < $numMinimoJogadores) {
             return ['error' => 'Número insuficiente de jogadores para formar a guilda.'];
         }
@@ -33,12 +58,12 @@ class BalanceamentoXPStrategy implements BalanceamentoInterface
             if ($numClerigos < $clerigosIdeais) {
                 $faltamClerigos = $clerigosIdeais - $numClerigos;
                 if ($faltamClerigos > 0) {
-                    return ['error' => "Está faltando um Mago ou Arqueiro para completar a guilda. Adicione {$faltamClerigos} Clérigo(s) para equilibrar."];
+                    return ['error' => "Está faltando um Mago ou Arqueiro para completar a guilda. Adicione ao menos 1 Clérigo para equilibrar."];
                 }
             } elseif ($numGuerreiros < ($numClerigos * 2)) {
                 $faltamGuerreiros = ceil(($numClerigos * 2) / 2) - $numGuerreiros;
                 if ($faltamGuerreiros > 0) {
-                    return ['error' => "Está faltando um Mago ou Arqueiro para completar a guilda. Adicione {$faltamGuerreiros} Guerreiro(s) para equilibrar."];
+                    return ['error' => "Está faltando um Mago ou Arqueiro para completar a guilda. Adicione ao menos 1 Guerreiro para equilibrar."];
                 }
             }
 
@@ -55,12 +80,11 @@ class BalanceamentoXPStrategy implements BalanceamentoInterface
                 if (isset($jogadoresPorClasse[$classe])) {
                     $jogador = $jogadoresPorClasse[$classe]->pop();
                     if (!empty($jogador)) {
-                        $guilda->adicionarJogador($jogador); // Método de adicionar jogador à guilda
+                        $guilda->adicionarJogador($jogador->toArray()); // Método de adicionar jogador à guilda
                     }
                 }
             }
         }
-        $guildas->load('jogadores');
 
         // Adiciona Magos ou Arqueiros em cada guilda
         foreach ($guildas as $guilda) {
@@ -71,12 +95,11 @@ class BalanceamentoXPStrategy implements BalanceamentoInterface
                 if (isset($jogadoresPorClasse[$value])) {
                     $jogadorMagoArqueiro = $jogadoresPorClasse[$value]->pop();
                     if ($jogadorMagoArqueiro) {
-                        $guilda->adicionarJogador($jogadorMagoArqueiro);
+                        $guilda->adicionarJogador($jogadorMagoArqueiro->toArray());
                     }
                 }
             }
         }
-        $guildas->load('jogadores');
 
         // Distribui os demais jogadores balanceando o XP
         $guildasJogadoresIds = $guildas->pluck('jogadores')->flatten()->pluck('id');
@@ -87,16 +110,16 @@ class BalanceamentoXPStrategy implements BalanceamentoInterface
         foreach ($jogadoresRestantes as $jogador) {
             $guildaMaisFraca = $guildas->sortBy('xp_total')->first();
             if ($guildaMaisFraca->jogadores->count() < $guildaMaisFraca->maximo_jogadores) {
-                if ($guildaMaisFraca->adicionarJogador($jogador)) {
+                if ($guildaMaisFraca->adicionarJogador($jogador->toArray())) {
                     $guildaMaisFraca->load('jogadores');
                 }
             }
         }
 
-        // Validação final: verifica se todas as guildas têm pelo menos 4 jogadores
         foreach ($guildas as $guilda) {
-            if ($guilda->jogadores->count() < 4) {
-                return ['error' => "A guilda '{$guilda->nome}' não possui o mínimo de 4 jogadores."];
+            $guilda->refresh();
+            if ($guilda->jogadores->count() <= 1) {
+                return ['error' => "A guilda não possui jogadores suficientes. Ajuste o número total de jogadores para garantir pelo menos 1 Guerreiro e 1 Clérigo por guilda."];
             }
         }
 

@@ -16,6 +16,8 @@ class Sessao extends Model
     protected $fillable = [
         'user_id',
         'nome',
+        'qtd_guildas',
+        'qtd_jogadores',
     ];
 
     public function user(): BelongsTo

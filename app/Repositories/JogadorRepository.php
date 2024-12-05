@@ -154,4 +154,50 @@ class JogadorRepository extends BaseRepository
                 return [$jogador->id => $nomeXp];
             });
     }
+
+    public function getJogadoresAleatorios(array $data): Collection
+    {
+        $guerreirosQtd = $data['guerreiros'] ?? 1;
+        $clerigosQtd = $data['clerigos'] ?? 1;
+        $magosQtd = $data['magos'] ?? 1;
+        $arqueirosQtd = $data['arqueiros'] ?? 1;
+
+        $guerreiros = $this->getQueryBuilder()
+            ->from('jogadores as j')
+            ->select('j.*', 'c.nome as classe_nome')
+            ->leftJoin('classes as c', 'c.id', '=', 'j.classe_id')
+            ->where('classe_id', 1)
+            ->orderByRaw('rand()')
+            ->limit($guerreirosQtd);
+
+        $clerigos = $this->getQueryBuilder()
+            ->from('jogadores as j')
+            ->where('classe_id', 2)
+            ->select('j.*', 'c.nome as classe_nome')
+            ->leftJoin('classes as c', 'c.id', '=', 'j.classe_id')
+            ->orderByRaw('rand()')
+            ->limit($clerigosQtd);
+
+        $magos = $this->getQueryBuilder()
+            ->from('jogadores as j')
+            ->where('classe_id', 3)
+            ->select('j.*', 'c.nome as classe_nome')
+            ->leftJoin('classes as c', 'c.id', '=', 'j.classe_id')
+            ->orderByRaw('rand()')
+            ->limit($magosQtd);
+
+        $arqueiros = $this->getQueryBuilder()
+            ->from('jogadores as j')
+            ->where('classe_id', 4)
+            ->select('j.*', 'c.nome as classe_nome')
+            ->leftJoin('classes as c', 'c.id', '=', 'j.classe_id')
+            ->orderByRaw('rand()')
+            ->limit($arqueirosQtd);
+
+        return $guerreiros
+            ->unionAll($clerigos)
+            ->unionAll($magos)
+            ->unionAll($arqueiros)
+            ->get();
+    }
 }

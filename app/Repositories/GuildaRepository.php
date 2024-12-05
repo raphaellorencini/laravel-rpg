@@ -135,7 +135,7 @@ class GuildaRepository extends BaseRepository
         return Guilda::create($dados);
     }
 
-    public function selectField(array $filters): Collection|\Illuminate\Support\Collection
+    public function selectField(array $filters = []): Collection|\Illuminate\Support\Collection
     {
         $query = $this->applyFilters($this->getQueryBuilder(), $filters);
         return $query

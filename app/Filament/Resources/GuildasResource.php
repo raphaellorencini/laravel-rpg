@@ -7,23 +7,17 @@ use App\Models\Guilda;
 use App\Repositories\ClasseRepository;
 use App\Repositories\GuildaRepository;
 use App\Repositories\JogadorRepository;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
-use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\Rules\Unique;
-use Filament\Forms\Components\Repeater;
 
 
 class GuildasResource extends Resource
@@ -32,7 +26,7 @@ class GuildasResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
 
-    protected static ?int $navigationSort = 0;
+    protected static ?int $navigationSort = 1;
 
     protected static ?string $navigationLabel = 'Guildas';
 
@@ -77,7 +71,7 @@ class GuildasResource extends Resource
 
         return $table
             ->modifyQueryUsing(function (Builder $query) use ($repository) {
-                return $repository->tableList($query, Auth::id());
+                return $repository->tableList($query);
             })
             ->columns([
                 TextColumn::make('nome')
@@ -94,63 +88,6 @@ class GuildasResource extends Resource
                 //
             ])
             ->actions([
-                Action::make('adicionarJogadores')
-                    ->hiddenLabel()
-                    ->tooltip('Adicionar Jogadores')
-                    ->icon('heroicon-o-user-plus')
-                    ->color('info')
-                    ->form([
-                        Repeater::make('jogadores')
-                            ->defaultItems(4)
-                            ->columns(2)
-                            ->addActionLabel('Adicionar Mais Jogadores')
-                            ->schema([
-                                Select::make('classe_id')
-                                    ->label('Classe')
-                                    ->options($classeRepository->getAll()->pluck('nome', 'id'))
-                                    ->reactive()
-                                    ->afterStateUpdated(fn (callable $set) => $set('jogador_id', null)),
-
-                                Select::make('jogador_id')
-                                    ->label('Jogador')
-                                    ->options(function (callable $get) use ($jogadorRepository) {
-                                        $classeId = $get('classe_id');
-                                        if ($classeId) {
-                                            return $jogadorRepository
-                                                ->listByClass(['classe_id' => $classeId]);
-                                        }
-                                        return [];
-                                    })
-                                    ->disabled(fn (callable $get) => !$get('classe_id')),
-                            ])
-                    ])
-                    ->action(function (array $data, Guilda $record) {
-                        $apiAccessKey = encrypt(config('app.api_access_key'));
-
-                        // Enviar os dados do repeater para a rota /guildas/salvar
-                        $response = Http::post(route('api.guildas.salvar'), [
-                            'guilda' => $record->id,
-                            'jogadores' => collect($data['jogadores'])->pluck('jogador_id')->toArray(),
-                            'api_access_key' => $apiAccessKey,
-                        ]);
-                        $responseData = $response->json();
-
-                        // Lidar com a resposta da requisição
-                        if ($response->successful() && !isset($responseData['error'])) {
-                            // Exibir mensagem de sucesso
-                            Notification::make()
-                                ->success()
-                                ->title('Jogadores adicionados com sucesso!')
-                                ->send();
-                        } else {
-                            // Exibir mensagem de erro
-                            Notification::make()
-                                ->warning()
-                                ->title('Erro ao adicionar jogadores.')
-                                ->body($responseData['error'])
-                                ->send();
-                        }
-                    }),
                 ViewAction::make('viewJogadores')
                     ->hiddenLabel()
                     ->tooltip('Ver Jogadores')

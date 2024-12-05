@@ -20,7 +20,6 @@ return new class extends Migration
                 $table->foreign('jogador_id')->references('id')->on('jogadores')->onDelete('cascade');
             }
 
-            $table->unique(['guilda_id', 'jogador_id']);
             $table->timestamps();
         });
     }

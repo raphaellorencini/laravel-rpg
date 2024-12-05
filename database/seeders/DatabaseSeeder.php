@@ -5,9 +5,7 @@ namespace Database\Seeders;
 use App\Models\Classe;
 use App\Models\Guilda;
 use App\Models\Jogador;
-use App\Models\Sessao;
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Seeder;
 
@@ -18,7 +16,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $classes = ['Guerreiro', 'Mago', 'Arqueiro', 'Clérigo'];
+        $classes = ['Guerreiro', 'Clérigo', 'Mago', 'Arqueiro'];
         foreach ($classes as $classe) {
             Classe::create(['nome' => $classe]);
         }
@@ -42,7 +40,7 @@ class DatabaseSeeder extends Seeder
         Jogador::create([
             'user_id' => $userTest->id,
             'classe_id' => 2,
-            'image' => 'img/a4.jpg',
+            'image' => 'img/c4.jpg',
             'xp' => 100,
             'confirmado' => true,
         ]);
@@ -101,21 +99,10 @@ class DatabaseSeeder extends Seeder
                 return [
                     'nome' => $titulo,
                     'maximo_jogadores' => rand(4, 8),
-                    'user_id' => $i + 1,
                 ];
             })->create();
             foreach ($guildasLista as $guilda) {
                 $guildas->add($guilda);
-            }
-
-            $sessoesLista = Sessao::factory()->count(2)->sequence(function (Sequence $sequence) use ($i) {
-                return [
-                    'nome' => 'Sessão - '.rand(1000, 9999),
-                    'user_id' => $i + 1,
-                ];
-            })->create();
-            foreach ($sessoesLista as $sessao) {
-                $sessoes->add($sessao);
             }
         }
 
@@ -136,7 +123,7 @@ class DatabaseSeeder extends Seeder
                     'user_id' => $user->id,
                     'classe_id' => $classe->id,
                     'image' => "img/{$img}.jpg",
-                    'xp' => rand(70, 100),
+                    'xp' => rand(90, 100),
                     'confirmado' => true,
                 ]));
             }
